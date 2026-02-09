@@ -1,0 +1,104 @@
+
+export type ShiftType = 'Largo' | 'Noche';
+
+export interface GSWState {
+  o: number;
+  v: number;
+  m: number;
+}
+
+export interface CpotState {
+  facial: number;
+  movimiento: number;
+  tono: number;
+  ventilacion: number;
+  vocalizacion: number;
+}
+
+export interface BpsState {
+  facial: number;
+  mmss: number;
+  ventilacion: number;
+}
+
+export interface HemoDetail {
+  frecuencia: 'Bradicardico' | 'Normocardico' | 'Taquicardico' | '';
+  ritmo: 'RS' | 'FA' | 'Flutter' | '';
+  presionTipo: 'Normotenso' | 'Hipotenso' | 'Hipertenso' | '';
+  presionSubTipo: 'Sistólico' | 'Diastólico' | 'Global' | '';
+  pam: string;
+  tempStatus: 'Febril' | 'Afebril' | 'Subfebril' | '';
+  satStatus: 'dentro de rangos' | 'dentro de metas' | '';
+  satMetaVal: string;
+  oxigenoterapia: 'Sin' | 'Con' | '';
+  satMethod: 'NRC' | 'MMV' | 'CNAF' | 'VMNI' | 'VMI' | '';
+  fio2: string;
+  flujo: string;
+  tempCnaf: string;
+  paramsLibre: string;
+  dolorStatus: 'No refiere' | 'Refiere';
+  dolorEscala: 'EVA' | 'CPOT' | 'BPS';
+  evaVal: string;
+  cpot: CpotState;
+  bps: BpsState;
+  dolorAccion: string[]; 
+  dolorVia: string[];   
+}
+
+export interface TqtDetail {
+  numero: string;
+  cuff: string;
+  fijado: string;
+  sitio: 'de la arcada dental' | 'de la comisura labial' | '';
+}
+
+export interface ElimDetail {
+  diuresisCaract: string;
+  diuresisVol: string;
+  diuresisHrs: string;
+  diuresisPeso: string;
+  depoTipo: string;
+  depoNegDias: string;
+}
+
+export interface DeviceEntry {
+  id: string;
+  type: string;
+  detail: string;
+}
+
+export interface TicksState {
+  estadoGral: 'BCG' | 'RCG' | 'MCG' | '';
+  neuro: string[];
+  rassVal: string;
+  sasVal: string;
+  gsw: GSWState;
+  pupilas: string[];
+  hemo: HemoDetail;
+  vent: string[];
+  tqt: TqtDetail;
+  uma: 'Con UMA' | 'Sin UMA' | '';
+  hidratacion: string[];
+  hidraVol: string;
+  hidraVolem: { que: string; velocidad: string };
+  nutricion: string[];
+  nutriTipo: string;
+  nutriVel: string;
+  nutriParenteralTipo: 'Estándar' | 'Smofkabiven' | 'Magistral';
+  nutriParenteralDetalle: string;
+  eliminacion: string[];
+  elimDetail: ElimDetail;
+  infeccioso: string[];
+  infecDet: string;
+  aislamientos: string[];
+  invasivos: DeviceEntry[];
+}
+
+export interface PatientData {
+  shift: ShiftType;
+  date: string;
+  exams: string;
+  pendings: string;
+}
+
+export type TabType = 'datos' | 'ticks' | 'resultado';

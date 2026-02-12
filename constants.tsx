@@ -36,7 +36,7 @@ export const BPS_OPTS = {
 
 export const NUTRI_VO_LIST = ['blando', 'liviano', 'picado fino', 'papilla', 'hiposódico', 'diabético', 'hipoglúcido', 'bajo en K y P'];
 export const NUTRI_ENTERAL_LIST = ['Fresubin', 'Fresubin HP', 'Fresubin 2K', 'Diben', 'Diben HP', 'Reconvan'];
-export const INVASIVOS_TIPOS = ['VVP', 'CVC', 'CHD', 'S Foley', 'SNG', 'Drenaje', 'PiccLine', 'MidLine', 'TOT', 'TQT', 'Otros'];
+export const INVASIVOS_TIPOS = ['VVP', 'CVC', 'LA', 'CHD', 'S Foley', 'SNG', 'Drenaje', 'PiccLine', 'MidLine', 'TOT', 'TQT', 'Otros'];
 
 export const ICONS = {
   Activity: () => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,

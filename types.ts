@@ -67,6 +67,17 @@ export interface DeviceEntry {
   detail: string;
 }
 
+// Estructura para capturar datos específicos de nutrición por vía
+export interface NutritionDetails {
+  voTipos: string[];
+  enteralSngTipo: string;
+  enteralSngVel: string;
+  enteralSnyVel: string;
+  parenteralTipo: 'Estándar' | 'Smofkabiven' | 'Magistral';
+  parenteralDetalle: string;
+  parenteralVel: string;
+}
+
 export interface TicksState {
   estadoGral: 'BCG' | 'RCG' | 'MCG' | '';
   neuro: string[];
@@ -81,11 +92,8 @@ export interface TicksState {
   hidratacion: string[];
   hidraVol: string;
   hidraVolem: { que: string; velocidad: string };
-  nutricion: string[];
-  nutriTipo: string;
-  nutriVel: string;
-  nutriParenteralTipo: 'Estándar' | 'Smofkabiven' | 'Magistral';
-  nutriParenteralDetalle: string;
+  nutricion: string[]; // Vías seleccionadas: VO, Enteral (SNG), etc.
+  nutriDetail: NutritionDetails;
   eliminacion: string[];
   elimDetail: ElimDetail;
   infeccioso: string[];

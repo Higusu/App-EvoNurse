@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-export const NEURO_LIST_ORDER = ['Lucido', 'Orientado', 'Desorientado', 'Vigil', 'Somnoliento', 'Sopor', 'Tranquilo', 'Agitado', 'CAM (+)', 'CAM (-)'];
+export const NEURO_LIST_ORDER = ['GSW', 'RASS', 'SAS', 'Lucido', 'Orientado', 'Desorientado', 'Vigil', 'Somnoliento', 'Sopor', 'Tranquilo', 'Agitado', 'Con Sedoanalgesia', 'Con requerimientos de contención', 'CAM (+)', 'CAM (-)'];
 
 export const RASS_OPTS = [
   { v: '+4', l: 'Combativo (+4)' }, { v: '+3', l: 'Muy Agitado (+3)' }, { v: '+2', l: 'Agitado (+2)' }, { v: '+1', l: 'Inquieto (+1)' },
@@ -34,9 +34,80 @@ export const BPS_OPTS = {
   vent: [{v: 1, l: 'Tolera el movimiento (1)'}, {v: 2, l: 'Tose, pero tolera la mayor parte del tiempo (2)'}, {v: 3, l: 'Lucha (3)'}, {v: 4, l: 'Imposible controlar la ventilación (4)'}]
 };
 
-export const NUTRI_VO_LIST = ['blando', 'liviano', 'picado fino', 'papilla', 'hiposódico', 'diabético', 'hipoglúcido', 'bajo en K y P'];
+export const NUTRI_VO_LIST = ['blando', 'liviano', 'picado fino', 'papilla', 'hiposódico', 'diabético', 'hipoglúcido', 'bajo en K y P', 'postres', 'régimen común', 'régimen líquido', 'otro'];
 export const NUTRI_ENTERAL_LIST = ['Fresubin', 'Fresubin HP', 'Fresubin 2K', 'Diben', 'Diben HP', 'Reconvan'];
 export const INVASIVOS_TIPOS = ['VVP', 'CVC', 'LA', 'CHD', 'S Foley', 'SNG', 'Drenaje', 'PiccLine', 'MidLine', 'TOT', 'TQT', 'Otros'];
+
+export const TEGUMENTOS_CATEGORIES = [
+  {
+    name: '0. Estado general',
+    options: ['Deshidratada', 'Edema a distal', 'Hidratada', 'Piel frágil', 'Piel ictérica', 'Piel sana']
+  },
+  {
+    name: '1. Cabeza y Cara',
+    options: [
+      'Anisocoria', 'Conjuntivitis', 'Edema facial', 'Escleras ictéricas', 
+      'Hematoma periorbitario', { label: 'Hemiparecia Facial', type: 'DI' }, 
+      'Labios secos', 'Lengua saburral', 'Lesiones en comisura labial', 
+      { label: 'Lesiones herpéticas', type: 'DI' }, 'Mucosa oral deshidratada', 
+      'Mucosa oral hidratada', 'Normocráneo', 'Prótesis dental', 
+      'Pupilas isocóricas y reactivas'
+    ]
+  },
+  {
+    name: '2. Cuello',
+    options: ['Cicatriz de traqueostomía', 'Ingurgitación yugular', 'Móvil y simétrico', 'Pulsos carotídeos presentes', 'Rigidez de nuca']
+  },
+  {
+    name: '3. Tórax',
+    options: [
+      { label: 'Drenaje', type: 'options' }, 'Expansión simétrica', 
+      { label: 'HDA Qx', type: 'options' }, 'PCA', 
+      'Ruidos cardiacos rítmicos', 'Sibilancias', 'Uso de musculatura accesoria'
+    ]
+  },
+  {
+    name: '4. Abdomen',
+    options: [
+      'Abdomen en tabla', { label: 'Apósito quirúrgico', type: 'options' }, 
+      'Ascítico', 'Blando', 'Colostomía', 'Depresible', 'Doloroso a la palpación', 
+      { label: 'Drenajes', type: 'options' }, 'Faja', 'Globuloso', 
+      { label: 'HDA Qx', type: 'options' }, 'Ileostomía', 'Masas palpables', 
+      'Resistente a la palpación', 'Ruidos hidroaéreos (-) ausentes', 
+      'Ruidos hidroaéreos (+) presentes', 'Timpanismo'
+    ]
+  },
+  {
+    name: '5. Extremidades Superiores',
+    options: [
+      'Cianosis distal', { label: 'Edema', type: 'edema' }, 'Equimosis x px', 'FAV', 
+      { label: 'Flebitis', type: 'options' }, { label: 'Hemiparecia Crural', type: 'DI' }, 
+      { label: 'Hemiparesia Braquial', type: 'DI' }, 'Llenado capilar < 2 seg', 
+      'Llenado capilar lento', 'MARSI', 'Móviles', 'Pulsos distales presentes y simétricos', 
+      'Signos insuficiencia venosa', 'Simétricas', 'Talones enrrojecidos', 'Talones secos', 
+      'Tromboflebitis', { label: 'Úlcera arterial', type: 'DI' }, { label: 'Úlcera venosa', type: 'DI' }
+    ]
+  },
+  {
+    name: '5. Extremidades Inferiores',
+    options: [
+      'Cianosis distal', { label: 'Edema', type: 'edema' }, 'Equimosis x px', 'FAV', 
+      { label: 'Flebitis', type: 'options' }, { label: 'Hemiparecia Crural', type: 'DI' }, 
+      { label: 'Hemiparesia Braquial', type: 'DI' }, 'Llenado capilar < 2 seg', 
+      'Llenado capilar lento', 'MARSI', 'Móviles', 'Pulsos distales presentes y simétricos', 
+      'Signos insuficiencia venosa', 'Simétricas', 'Talones enrrojecidos', 'Talones secos', 
+      'Tromboflebitis', { label: 'Úlcera arterial', type: 'DI' }, { label: 'Úlcera venosa', type: 'DI' }
+    ]
+  },
+  {
+    name: '6. Genito-Perineal',
+    options: ['DAI', 'Genitales externos indemnes', 'Irritación perineal', 'Micción espontánea', 'Presencia de flujo/secreción', 'Retención urinaria']
+  },
+  {
+    name: '7. Otro',
+    options: [{ label: 'Otro', type: 'options' }]
+  }
+];
 
 export const ICONS = {
   Activity: () => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,

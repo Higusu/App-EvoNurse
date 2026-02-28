@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { PatientData, TicksState, TabType, DeviceEntry } from './types';
 import { 
   GSW_OPTS, RASS_OPTS, SAS_OPTS, CPOT_OPTS, BPS_OPTS, 
-  NUTRI_VO_LIST, NUTRI_ENTERAL_LIST, INVASIVOS_TIPOS, ICONS, NEURO_LIST_ORDER 
+  NUTRI_VO_LIST, NUTRI_ENTERAL_LIST, INVASIVOS_TIPOS, ICONS, NEURO_LIST_ORDER,
+  TEGUMENTOS_CATEGORIES
 } from './constants';
 import { generateEvolution } from './services/geminiService';
 
@@ -27,16 +28,21 @@ const App: React.FC = () => {
       bps: { facial: 1, mmss: 1, ventilacion: 1 },
       dolorAccion: [], dolorVia: []
     },
-    vent: [], tqt: { numero: '', cuff: '30', fijado: '', sitio: '' },
+    vent: [], tqt: { numero: '', cuff: '30' }, tot: { numero: '', cms: '', cuff: '30', sitio: '' },
     uma: '',
     hidratacion: [], hidraVol: '', hidraVolem: { que: '', velocidad: '' },
     nutricion: [],
     nutriDetail: {
       voTipos: [], enteralSngTipo: '', enteralSngVel: '', enteralSnyVel: '', 
-      parenteralTipo: 'Estándar', parenteralDetalle: '', parenteralVel: ''
+      parenteralTipo: 'Estándar', parenteralDetalle: '', parenteralVel: '',
+      nutriOtro: '', voOtro: ''
     },
-    eliminacion: [], elimDetail: { diuresisCaract: 'clara', diuresisVol: '', diuresisHrs: '', diuresisPeso: '', depoTipo: 'normales', depoNegDias: '' },
-    infeccioso: [], infecDet: '', aislamientos: [],
+    eliminacion: [], elimDetail: { diuresisCaract: 'clara', diuresisVol: '', diuresisHrs: '', diuresisPeso: '', depoTipo: 'normales', depoNegDias: '', vomitoVol: '', dialisisUF: '' },
+    infeccioso: [], infecDet: '', aislamientos: [], aislamientoRazon: '',
+    contencionRazones: [], contencionTipos: [],
+    tegumentos: {
+      selections: []
+    },
     invasivos: []
   });
 
@@ -56,6 +62,38 @@ const App: React.FC = () => {
         : [...p.nutriDetail.voTipos, val];
       return { ...p, nutriDetail: { ...p.nutriDetail, voTipos: newList } };
     });
+  };
+
+  const toggleTegumentos = (label: string, category?: string) => {
+    setTicks(prev => {
+      const existing = prev.tegumentos.selections.find(s => s.label === label && s.category === category);
+      if (existing) {
+        return {
+          ...prev,
+          tegumentos: {
+            selections: prev.tegumentos.selections.filter(s => !(s.label === label && s.category === category))
+          }
+        };
+      } else {
+        return {
+          ...prev,
+          tegumentos: {
+            selections: [...prev.tegumentos.selections, { id: `${category || ''}_${label}`, label, category, side: '', value: '' }]
+          }
+        };
+      }
+    });
+  };
+
+  const updateTegumento = (label: string, category: string | undefined, field: 'side' | 'value', val: string) => {
+    setTicks(prev => ({
+      ...prev,
+      tegumentos: {
+        selections: prev.tegumentos.selections.map(s => 
+          (s.label === label && s.category === category) ? { ...s, [field]: val } : s
+        )
+      }
+    }));
   };
 
   const addInv = (type: string) => {
@@ -174,6 +212,26 @@ const App: React.FC = () => {
                   </div>
                 </div>
               )}
+              {ticks.neuro.includes('Con requerimientos de contención') && (
+                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-4 animate-fade-in">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase">Razones de contención</label>
+                    <div className="flex flex-wrap gap-1">
+                      {['riesgo de caídas', 'riesgo de retiro de invasivos'].map(r => (
+                        <button key={r} onClick={() => toggleList('contencionRazones', r)} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.contencionRazones.includes(r) ? 'bg-indigo-600 text-white' : 'bg-white border-slate-300'}`}>{r}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase">Tipos de contención</label>
+                    <div className="flex flex-wrap gap-1">
+                      {['Extremidades superiores', 'Mitones', 'Extremidades inferiores', 'Tórax'].map(t => (
+                        <button key={t} onClick={() => toggleList('contencionTipos', t)} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.contencionTipos.includes(t) ? 'bg-indigo-600 text-white' : 'bg-white border-slate-300'}`}>{t}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 3. Hemodinamia */}
@@ -228,41 +286,43 @@ const App: React.FC = () => {
                 {/* Dolor UCI */}
                 <div className="bg-rose-50 p-4 rounded-xl border border-rose-100 space-y-3">
                   <h4 className="text-[10px] font-black text-rose-800 uppercase">Dolor y Analgesia</h4>
-                  <div className="flex gap-2">
-                    {['No refiere', 'Refiere'].map(ds => <button key={ds} onClick={() => setTicks(p => ({...p, hemo: {...p.hemo, dolorStatus: ds as any}}))} className={`flex-1 py-1.5 text-[10px] font-black rounded border ${ticks.hemo.dolorStatus === ds ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-600 border-rose-200'}`}>{ds.toUpperCase()}</button>)}
-                  </div>
-                  {ticks.hemo.dolorStatus === 'Refiere' && (
-                    <div className="space-y-3 animate-fade-in">
+                <div className="flex gap-2">
+                  {['No refiere', 'Refiere', 'Dolor no evaluable'].map(ds => <button key={ds} onClick={() => setTicks(p => ({...p, hemo: {...p.hemo, dolorStatus: ds as any}}))} className={`flex-1 py-1.5 text-[10px] font-black rounded border ${ticks.hemo.dolorStatus === ds ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-600 border-rose-200'}`}>{ds.toUpperCase()}</button>)}
+                </div>
+                {ticks.hemo.dolorStatus && ticks.hemo.dolorStatus !== 'No refiere' && (
+                  <div className="space-y-3 animate-fade-in">
+                    {ticks.hemo.dolorStatus === 'Refiere' && (
                       <div className="flex gap-1">
                         {['EVA', 'CPOT', 'BPS'].map(esc => <button key={esc} onClick={() => setTicks(p => ({...p, hemo: {...p.hemo, dolorEscala: esc as any}}))} className={`flex-1 py-1 text-[9px] font-bold rounded border ${ticks.hemo.dolorEscala === esc ? 'bg-rose-700 text-white border-rose-800' : 'bg-white text-rose-700 border-rose-200'}`}>{esc}</button>)}
                       </div>
-                      {ticks.hemo.dolorEscala === 'EVA' && <input placeholder="EVA 0-10" value={ticks.hemo.evaVal} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, evaVal: e.target.value}}))} className="w-full p-2 text-xs border border-slate-300 rounded bg-white font-medium" />}
-                      {ticks.hemo.dolorEscala === 'CPOT' && (
-                        <div className="grid gap-1">
-                          {Object.entries(CPOT_OPTS).map(([k, opts]) => (
-                            <select key={k} value={(ticks.hemo.cpot as any)[k]} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, cpot: {...p.hemo.cpot, [k]: parseInt(e.target.value)}}}) )} className="text-[10px] p-1 border border-slate-300 rounded bg-white shadow-sm font-medium">
-                               {opts.map(o => <option key={o.v} value={o.v}>{k.toUpperCase()}: {o.l}</option>)}
-                            </select>
-                          ))}
-                        </div>
-                      )}
-                      {ticks.hemo.dolorEscala === 'BPS' && (
-                        <div className="grid gap-1">
-                          {Object.entries(BPS_OPTS).map(([k, opts]) => (
-                            <select key={k} value={(ticks.hemo.bps as any)[k]} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, bps: {...p.hemo.bps, [k]: parseInt(e.target.value)}}}) )} className="text-[10px] p-1 border border-slate-300 rounded bg-white shadow-sm font-medium">
-                               {opts.map(o => <option key={o.v} value={o.v}>{k.toUpperCase()}: {o.l}</option>)}
+                    )}
+                    {ticks.hemo.dolorStatus === 'Refiere' && ticks.hemo.dolorEscala === 'EVA' && <input placeholder="EVA 0-10" value={ticks.hemo.evaVal} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, evaVal: e.target.value}}))} className="w-full p-2 text-xs border border-slate-300 rounded bg-white font-medium" />}
+                    {ticks.hemo.dolorStatus === 'Refiere' && ticks.hemo.dolorEscala === 'CPOT' && (
+                      <div className="grid gap-1">
+                        {Object.entries(CPOT_OPTS).map(([k, opts]) => (
+                          <select key={k} value={(ticks.hemo.cpot as any)[k]} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, cpot: {...p.hemo.cpot, [k]: parseInt(e.target.value)}}}) )} className="text-[10px] p-1 border border-slate-300 rounded bg-white shadow-sm font-medium">
+                             {opts.map(o => <option key={o.v} value={o.v}>{k.toUpperCase()}: {o.l}</option>)}
                           </select>
-                          ))}
-                        </div>
-                      )}
-                      <div className="flex flex-wrap gap-1">
-                        {['Mantiene', 'Se agrega', 'Se administra'].map(acc => <button key={acc} onClick={() => toggleList('dolorAccion', acc, 'hemo')} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.hemo.dolorAccion.includes(acc) ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-600 border-rose-200'}`}>{acc}</button>)}
+                        ))}
                       </div>
-                      <div className="flex flex-wrap gap-1">
-                        {['Analgesia SOS', 'Analgesia por horario', 'Analgesia en BIC'].map(via => <button key={via} onClick={() => toggleList('dolorVia', via, 'hemo')} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.hemo.dolorVia.includes(via) ? 'bg-slate-700 text-white border-black' : 'bg-white text-slate-700 border-slate-200'}`}>{via}</button>)}
+                    )}
+                    {ticks.hemo.dolorStatus === 'Refiere' && ticks.hemo.dolorEscala === 'BPS' && (
+                      <div className="grid gap-1">
+                        {Object.entries(BPS_OPTS).map(([k, opts]) => (
+                          <select key={k} value={(ticks.hemo.bps as any)[k]} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, bps: {...p.hemo.bps, [k]: parseInt(e.target.value)}}}) )} className="text-[10px] p-1 border border-slate-300 rounded bg-white shadow-sm font-medium">
+                             {opts.map(o => <option key={o.v} value={o.v}>{k.toUpperCase()}: {o.l}</option>)}
+                        </select>
+                        ))}
                       </div>
+                    )}
+                    <div className="flex flex-wrap gap-1">
+                      {['Mantiene', 'Se agrega', 'Se administra'].map(acc => <button key={acc} onClick={() => toggleList('dolorAccion', acc, 'hemo')} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.hemo.dolorAccion.includes(acc) ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-600 border-rose-200'}`}>{acc}</button>)}
                     </div>
-                  )}
+                    <div className="flex flex-wrap gap-1">
+                      {['Analgesia SOS', 'Analgesia por horario', 'Analgesia en BIC'].map(via => <button key={via} onClick={() => toggleList('dolorVia', via, 'hemo')} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.hemo.dolorVia.includes(via) ? 'bg-slate-700 text-white border-black' : 'bg-white text-slate-700 border-slate-200'}`}>{via}</button>)}
+                    </div>
+                  </div>
+                )}
                 </div>
               </div>
             </div>
@@ -271,18 +331,26 @@ const App: React.FC = () => {
             <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
               <h3 className="text-xs font-black text-slate-800 uppercase">5. Ventilatorio</h3>
               <div className="flex flex-wrap gap-1">
-                {['Con UMA', 'Sin UMA', 'Con TQT'].map(o => <button key={o} onClick={() => toggleList('vent', o)} className={`px-3 py-1.5 rounded-full text-[10px] font-bold border ${ticks.vent.includes(o) ? 'bg-cyan-600 text-white border-cyan-700' : 'bg-white text-slate-400 border-slate-300'}`}>{o}</button>)}
+                {['Con UMA', 'Sin UMA', 'Con TOT', 'Con TQT'].map(o => <button key={o} onClick={() => toggleList('vent', o)} className={`px-3 py-1.5 rounded-full text-[10px] font-bold border ${ticks.vent.includes(o) ? 'bg-cyan-600 text-white border-cyan-700' : 'bg-white text-slate-400 border-slate-300'}`}>{o}</button>)}
               </div>
-              {ticks.vent.includes('Con TQT') && (
+              {ticks.vent.includes('Con TOT') && (
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-2 gap-2 animate-fade-in">
-                  <input placeholder="TQT # (ej: 8)" value={ticks.tqt.numero} onChange={e => setTicks(p => ({...p, tqt: {...p.tqt, numero: e.target.value}}))} className="p-2 text-xs border border-slate-300 rounded bg-white shadow-sm font-medium" />
-                  <input placeholder="Cuff (mmHg)" value={ticks.tqt.cuff} onChange={e => setTicks(p => ({...p, tqt: {...p.tqt, cuff: e.target.value}}))} className="p-2 text-xs border border-slate-300 rounded bg-white shadow-sm font-medium" />
-                  <input placeholder="Fijado a... cms" value={ticks.tqt.fijado} onChange={e => setTicks(p => ({...p, tqt: {...p.tqt, fijado: e.target.value}}))} className="p-2 text-xs border border-slate-300 rounded bg-white shadow-sm font-medium" />
-                  <select value={ticks.tqt.sitio} onChange={e => setTicks(p => ({...p, tqt: {...p.tqt, sitio: e.target.value as any}}))} className="p-2 text-xs border border-slate-300 rounded bg-white col-span-2 shadow-sm font-medium">
+                  <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase">Detalles TOT</div>
+                  <input placeholder="TOT # (ej: 8)" value={ticks.tot.numero} onChange={e => setTicks(p => ({...p, tot: {...p.tot, numero: e.target.value}}))} className="p-2 text-xs border border-slate-300 rounded bg-white shadow-sm font-medium" />
+                  <input placeholder="Cuff (mmHg)" value={ticks.tot.cuff} onChange={e => setTicks(p => ({...p, tot: {...p.tot, cuff: e.target.value}}))} className="p-2 text-xs border border-slate-300 rounded bg-white shadow-sm font-medium" />
+                  <input placeholder="Fijado a... cms" value={ticks.tot.cms} onChange={e => setTicks(p => ({...p, tot: {...p.tot, cms: e.target.value}}))} className="p-2 text-xs border border-slate-300 rounded bg-white shadow-sm font-medium" />
+                  <select value={ticks.tot.sitio} onChange={e => setTicks(p => ({...p, tot: {...p.tot, sitio: e.target.value as any}}))} className="p-2 text-xs border border-slate-300 rounded bg-white shadow-sm font-medium">
                     <option value="">Posición...</option>
                     <option>de la arcada dental</option>
                     <option>de la comisura labial</option>
                   </select>
+                </div>
+              )}
+              {ticks.vent.includes('Con TQT') && (
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-2 gap-2 animate-fade-in">
+                  <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase">Detalles TQT</div>
+                  <input placeholder="TQT # (ej: 8)" value={ticks.tqt.numero} onChange={e => setTicks(p => ({...p, tqt: {...p.tqt, numero: e.target.value}}))} className="p-2 text-xs border border-slate-300 rounded bg-white shadow-sm font-medium" />
+                  <input placeholder="Cuff (mmHg)" value={ticks.tqt.cuff} onChange={e => setTicks(p => ({...p, tqt: {...p.tqt, cuff: e.target.value}}))} className="p-2 text-xs border border-slate-300 rounded bg-white shadow-sm font-medium" />
                 </div>
               )}
             </div>
@@ -311,10 +379,21 @@ const App: React.FC = () => {
             <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
               <h3 className="text-xs font-black text-slate-800 uppercase">7. Nutrición</h3>
               <div className="flex flex-wrap gap-1">
-                {['VO', 'Enteral (SNG)', 'Enteral (SNY)', 'Parenteral', 'Régimen 0'].map(o => (
+                {['VO', 'Enteral (SNG)', 'Enteral (SNY)', 'Parenteral', 'Régimen 0', 'Otro'].map(o => (
                   <button key={o} onClick={() => toggleList('nutricion', o)} className={`px-4 py-2 rounded-full text-[10px] font-bold border ${ticks.nutricion.includes(o) ? 'bg-cyan-600 text-white' : 'bg-white text-slate-400 border-slate-300'}`}>{o}</button>
                 ))}
               </div>
+
+              {ticks.nutricion.includes('Otro') && (
+                <div className="mt-2 animate-fade-in">
+                  <input 
+                    placeholder="Especifique otra nutrición..." 
+                    value={ticks.nutriDetail.nutriOtro} 
+                    onChange={e => setTicks(p => ({...p, nutriDetail: {...p.nutriDetail, nutriOtro: e.target.value}}))} 
+                    className="w-full p-2 text-xs border border-slate-300 rounded bg-white font-medium"
+                  />
+                </div>
+              )}
 
               {ticks.nutricion.includes('VO') && (
                 <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-2 animate-fade-in">
@@ -324,6 +403,14 @@ const App: React.FC = () => {
                       <button key={o} onClick={() => toggleVoNutri(o)} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.nutriDetail.voTipos.includes(o) ? 'bg-cyan-700 text-white' : 'bg-white border-slate-300'}`}>{o}</button>
                     ))}
                   </div>
+                  {ticks.nutriDetail.voTipos.includes('otro') && (
+                    <input 
+                      placeholder="Especifique consistencia..." 
+                      value={ticks.nutriDetail.voOtro} 
+                      onChange={e => setTicks(p => ({...p, nutriDetail: {...p.nutriDetail, voOtro: e.target.value}}))} 
+                      className="w-full p-2 text-xs border border-slate-300 rounded bg-white font-medium animate-fade-in"
+                    />
+                  )}
                 </div>
               )}
 
@@ -366,8 +453,30 @@ const App: React.FC = () => {
             <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
               <h3 className="text-xs font-black text-slate-800 uppercase">8. Eliminación</h3>
               <div className="flex flex-wrap gap-1">
-                {['Diuresis Espontánea', 'S. Foley', 'Anuria', 'Deposiciones (+)', 'Deposiciones (-)'].map(o => <button key={o} onClick={() => toggleList('eliminacion', o)} className={`px-3 py-1.5 rounded-full text-[10px] font-bold border ${ticks.eliminacion.includes(o) ? 'bg-cyan-600 text-white border-cyan-700' : 'bg-white text-slate-400 border-slate-300'}`}>{o}</button>)}
+                {['Diuresis Espontánea', 'S. Foley', 'Anuria', 'Deposiciones (+)', 'Deposiciones (-)', 'Vómito', 'Dialisis'].map(o => <button key={o} onClick={() => toggleList('eliminacion', o)} className={`px-3 py-1.5 rounded-full text-[10px] font-bold border ${ticks.eliminacion.includes(o) ? 'bg-cyan-600 text-white border-cyan-700' : 'bg-white text-slate-400 border-slate-300'}`}>{o}</button>)}
               </div>
+
+              {ticks.eliminacion.includes('Vómito') && (
+                <div className="mt-2 animate-fade-in">
+                  <input 
+                    placeholder="Volumen Vómito (ml)" 
+                    value={ticks.elimDetail.vomitoVol} 
+                    onChange={e => setTicks(p => ({...p, elimDetail: {...p.elimDetail, vomitoVol: e.target.value}}))} 
+                    className="w-full p-2 text-xs border border-slate-300 rounded bg-white font-medium"
+                  />
+                </div>
+              )}
+
+              {ticks.eliminacion.includes('Dialisis') && (
+                <div className="mt-2 animate-fade-in">
+                  <input 
+                    placeholder="Volumen UF Dialisis (ml)" 
+                    value={ticks.elimDetail.dialisisUF} 
+                    onChange={e => setTicks(p => ({...p, elimDetail: {...p.elimDetail, dialisisUF: e.target.value}}))} 
+                    className="w-full p-2 text-xs border border-slate-300 rounded bg-white font-medium"
+                  />
+                </div>
+              )}
               {(ticks.eliminacion.includes('Diuresis Espontánea') || ticks.eliminacion.includes('S. Foley')) && (
                 <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-3 animate-fade-in">
                   <select value={ticks.elimDetail.diuresisCaract} onChange={e => setTicks(p => ({...p, elimDetail: {...p.elimDetail, diuresisCaract: e.target.value}}))} className="w-full p-2 text-xs border border-slate-300 rounded bg-white shadow-sm font-medium">
@@ -406,7 +515,117 @@ const App: React.FC = () => {
               <div className="pt-2">
                 <label className="text-[9px] font-black text-slate-400 uppercase block mb-2">Aislamientos</label>
                 <div className="flex flex-wrap gap-1">
-                  {['Sin aislamiento', 'Gotitas', 'Contacto', 'Aéreo'].map(a => <button key={a} onClick={() => toggleList('aislamientos', a)} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.aislamientos.includes(a) ? 'bg-amber-600 text-white border-amber-700' : 'bg-white text-slate-400 border-slate-300'}`}>{a}</button>)}
+                  {['Sin aislamiento', 'Gotitas', 'Contacto', 'Aéreo', 'Aislamiento protector'].map(a => <button key={a} onClick={() => toggleList('aislamientos', a)} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.aislamientos.includes(a) ? 'bg-amber-600 text-white border-amber-700' : 'bg-white text-slate-400 border-slate-300'}`}>{a}</button>)}
+                </div>
+                {ticks.aislamientos.length > 0 && !ticks.aislamientos.includes('Sin aislamiento') && (
+                  <div className="mt-2 animate-fade-in">
+                    <input 
+                      placeholder="Razón de aislamiento..." 
+                      value={ticks.aislamientoRazon} 
+                      onChange={e => setTicks(p => ({...p, aislamientoRazon: e.target.value}))} 
+                      className="w-full p-2 text-xs border border-slate-300 rounded bg-white font-medium"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 10. Tegumentos */}
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-6">
+              <h3 className="text-xs font-black text-slate-800 uppercase">10. Tegumentos</h3>
+              
+              <div className="space-y-6">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-6">
+                  <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-200 pb-1">Estado general de la piel</h4>
+                  {TEGUMENTOS_CATEGORIES.map(cat => (
+                    <div key={cat.name} className="space-y-3">
+                      <label className="text-[10px] font-black text-slate-400 uppercase block">{cat.name}</label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {cat.options.map(opt => {
+                          const label = typeof opt === 'string' ? opt : opt.label;
+                          const type = typeof opt === 'string' ? 'simple' : opt.type;
+                          const isSelected = ticks.tegumentos.selections.some(s => s.label === label && s.category === cat.name);
+                          const selection = ticks.tegumentos.selections.find(s => s.label === label && s.category === cat.name);
+
+                          return (
+                            <div key={label} className="flex flex-col gap-1">
+                              <button 
+                                onClick={() => toggleTegumentos(label, cat.name)} 
+                                className={`px-2.5 py-1.5 text-[10px] font-bold rounded-lg border transition-all ${isSelected ? 'bg-cyan-600 text-white border-cyan-700 shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
+                              >
+                                {label}
+                              </button>
+                              
+                              {isSelected && type === 'DI' && (
+                                <div className="flex gap-1 animate-fade-in">
+                                  {['Derecho', 'Izquierdo'].map(side => (
+                                    <button 
+                                      key={side} 
+                                      onClick={() => updateTegumento(label, cat.name, 'side', side)}
+                                      className={`flex-1 py-1 text-[8px] font-black rounded border ${selection?.side === side ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white border-slate-200 text-slate-400'}`}
+                                    >
+                                      {side === 'Derecho' ? 'D' : 'I'}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+
+                              {isSelected && type === 'options' && (
+                                <input 
+                                  placeholder="Especifique..." 
+                                  value={selection?.value || ''} 
+                                  onChange={e => updateTegumento(label, cat.name, 'value', e.target.value)}
+                                  className="w-full p-1.5 text-[10px] border border-slate-200 rounded bg-white font-medium animate-fade-in"
+                                />
+                              )}
+
+                              {isSelected && type === 'edema' && (
+                                <div className="flex gap-1 animate-fade-in">
+                                  {['+', '++', '+++'].map(val => (
+                                    <button 
+                                      key={val} 
+                                      onClick={() => updateTegumento(label, cat.name, 'value', val)}
+                                      className={`flex-1 py-1 text-[8px] font-black rounded border ${selection?.value === val ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white border-slate-200 text-slate-400'}`}
+                                    >
+                                      {val}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase">Estado de zonas de apoyo</label>
+                  <div className="flex gap-1 mb-2">
+                    {['Puntos de apoyo sin lesiones', 'LPP'].map(o => (
+                      <button key={o} onClick={() => toggleTegumentos(o, 'Estado de zonas de apoyo')} className={`flex-1 py-1.5 text-[10px] font-bold rounded border ${ticks.tegumentos.selections.some(s => s.label === o && s.category === 'Estado de zonas de apoyo') ? 'bg-cyan-600 text-white' : 'bg-white border-slate-300 text-slate-400'}`}>{o}</button>
+                    ))}
+                  </div>
+                  {ticks.tegumentos.selections.some(s => s.label === 'LPP' && s.category === 'Estado de zonas de apoyo') && (
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
+                      <input 
+                        placeholder="Grado y Ubicación (ej: Grado II en Sacro)" 
+                        value={ticks.tegumentos.selections.find(s => s.label === 'LPP' && s.category === 'Estado de zonas de apoyo')?.value || ''} 
+                        onChange={e => updateTegumento('LPP', 'Estado de zonas de apoyo', 'value', e.target.value)} 
+                        className="w-full p-2 text-xs border border-slate-300 rounded bg-white font-medium"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase">Signos de alarma</label>
+                  <div className="flex flex-wrap gap-1">
+                    {['Sin signos de alarma en sitios de apoyo', 'compromiso de conciencia', 'edema', 'piel frágil', 'piel seca', 'requerimientos de contención', 'piel descamada', 'talones secos', 'dismovilismo'].map(o => (
+                      <button key={o} onClick={() => toggleTegumentos(o, 'Signos de alarma')} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.tegumentos.selections.some(s => s.label === o && s.category === 'Signos de alarma') ? 'bg-rose-600 text-white' : 'bg-white border-slate-300 text-slate-400'}`}>{o}</button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

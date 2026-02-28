@@ -36,7 +36,7 @@ export interface HemoDetail {
   flujo: string;
   tempCnaf: string;
   paramsLibre: string;
-  dolorStatus: 'No refiere' | 'Refiere';
+  dolorStatus: 'No refiere' | 'Refiere' | 'Dolor no evaluable' | '';
   dolorEscala: 'EVA' | 'CPOT' | 'BPS';
   evaVal: string;
   cpot: CpotState;
@@ -48,7 +48,12 @@ export interface HemoDetail {
 export interface TqtDetail {
   numero: string;
   cuff: string;
-  fijado: string;
+}
+
+export interface TotDetail {
+  numero: string;
+  cms: string;
+  cuff: string;
   sitio: 'de la arcada dental' | 'de la comisura labial' | '';
 }
 
@@ -59,6 +64,8 @@ export interface ElimDetail {
   diuresisPeso: string;
   depoTipo: string;
   depoNegDias: string;
+  vomitoVol: string;
+  dialisisUF: string;
 }
 
 export interface DeviceEntry {
@@ -76,6 +83,20 @@ export interface NutritionDetails {
   parenteralTipo: 'Estándar' | 'Smofkabiven' | 'Magistral';
   parenteralDetalle: string;
   parenteralVel: string;
+  nutriOtro: string;
+  voOtro: string;
+}
+
+export interface TegumentosSelection {
+  id: string;
+  label: string;
+  side?: 'Derecho' | 'Izquierdo' | '';
+  value?: string;
+  category?: string;
+}
+
+export interface TegumentosState {
+  selections: TegumentosSelection[];
 }
 
 export interface TicksState {
@@ -88,6 +109,7 @@ export interface TicksState {
   hemo: HemoDetail;
   vent: string[];
   tqt: TqtDetail;
+  tot: TotDetail;
   uma: 'Con UMA' | 'Sin UMA' | '';
   hidratacion: string[];
   hidraVol: string;
@@ -99,6 +121,10 @@ export interface TicksState {
   infeccioso: string[];
   infecDet: string;
   aislamientos: string[];
+  aislamientoRazon: string;
+  contencionRazones: string[];
+  contencionTipos: string[];
+  tegumentos: TegumentosState;
   invasivos: DeviceEntry[];
 }
 

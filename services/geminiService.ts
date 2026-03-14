@@ -12,7 +12,14 @@ const formatWithAnd = (items: string[]) => {
 };
 
 export const generateEvolution = async (data: PatientData, ticks: TicksState): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const apiKey = process.env.GEMINI_API_KEY;
+  
+  if (!apiKey || apiKey === 'undefined' || apiKey === '') {
+    console.error("Gemini API Key is missing or undefined.");
+    return "Error: No se detectó la configuración de la clave de API. Por favor, contacte al administrador o intente recargar la página.";
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
 
   // Título Formateado: EVOLUCION TURNO [SHIFT] DD/MM
   const [year, month, day] = data.date.split('-');
@@ -216,13 +223,22 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-flash-latest',
       contents: prompt,
-      config: { temperature: 0, topP: 0.1 }
+      config: { 
+        temperature: 0.1,
+        topP: 0.95,
+      }
     });
-    return (response.text ?? "").replace(/\*/g, '').trim();
+    
+    if (!response.text) {
+      console.warn("Gemini returned an empty response.");
+      return "La IA no pudo generar el texto. Por favor, revise los datos ingresados e intente nuevamente.";
+    }
+
+    return response.text.replace(/\*/g, '').trim();
   } catch (e) {
     console.error("Error in generateEvolution:", e);
-    return "Error generando evolución clínica. Por favor, intente nuevamente.";
+    return `Error generando evolución clínica: ${e instanceof Error ? e.message : 'Error desconocido'}.`;
   }
 };

@@ -12,23 +12,24 @@ const formatWithAnd = (items: string[]) => {
 };
 
 export const generateEvolution = async (data: PatientData, ticks: TicksState): Promise<string> => {
-  // Try to get API key from all possible global sources
-  const rawKey = (process.env as any).GEMINI_API_KEY || 
+  // 1. Try to get API key from localStorage (User entered in UI)
+  const localKey = typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY_MANUAL') : null;
+  
+  // 2. Try to get API key from all possible global sources
+  const envKey = (process.env as any).GEMINI_API_KEY || 
                  (process.env as any).API_KEY || 
                  (import.meta as any).env?.VITE_GEMINI_API_KEY ||
                  (window as any).GEMINI_API_KEY;
                  
+  const rawKey = localKey || envKey;
   const apiKey = typeof rawKey === 'string' ? rawKey.trim() : '';
   
-  // Safe debugging (only first and last chars)
   if (apiKey) {
-    console.log(`API Key detectada: ${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}`);
-  } else {
-    console.error("No se detectó ninguna API Key en el entorno.");
+    console.log(`API Key detectada (${localKey ? 'Manual' : 'Entorno'}): ${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}`);
   }
   
   if (!apiKey || apiKey === 'undefined' || apiKey === 'null' || apiKey === '') {
-    return "Error: No se detectó la clave de API. \n\nPASOS PARA SOLUCIONAR:\n1. Ve al icono de engranaje (Settings) arriba a la derecha.\n2. Ve a 'Secrets'.\n3. Asegúrate de que existe 'GEMINI_API_KEY' con tu clave.\n4. RECARGA la página del navegador.";
+    return "Error: No se detectó la clave de API. \n\nPor favor, usa el botón de Configuración (engranaje) en la barra lateral para ingresar tu clave manualmente.";
   }
 
   const ai = new GoogleGenAI({ apiKey });

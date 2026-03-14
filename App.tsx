@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PatientData, TicksState, TabType, DeviceEntry } from './types';
 import { 
   GSW_OPTS, RASS_OPTS, SAS_OPTS, CPOT_OPTS, BPS_OPTS, 
@@ -12,6 +12,19 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('datos');
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState('');
+  const [showConfig, setShowConfig] = useState(false);
+  const [manualApiKey, setManualApiKey] = useState('');
+
+  useEffect(() => {
+    const savedKey = localStorage.getItem('GEMINI_API_KEY_MANUAL');
+    if (savedKey) setManualApiKey(savedKey);
+  }, []);
+
+  const saveApiKey = () => {
+    localStorage.setItem('GEMINI_API_KEY_MANUAL', manualApiKey);
+    setShowConfig(false);
+    alert('Clave de API guardada correctamente.');
+  };
   
   const [patientData, setPatientData] = useState<PatientData>({
     shift: 'Largo', date: new Date().toISOString().split('T')[0], exams: '', pendings: ''
@@ -123,9 +136,51 @@ const App: React.FC = () => {
             <ICONS.Activity />
             <h1 className="text-xl font-black tracking-tight uppercase">EVONURSE <span className="text-cyan-400">PRO</span></h1>
           </div>
-          <button onClick={() => window.location.reload()} className="p-2 hover:bg-red-600 rounded-lg transition-colors"><ICONS.Trash /></button>
+          <div className="flex gap-2">
+            <button onClick={() => setShowConfig(true)} className="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"><ICONS.Settings /></button>
+            <button onClick={() => window.location.reload()} className="p-2 hover:bg-red-600 rounded-lg transition-colors text-slate-400 hover:text-white"><ICONS.Trash /></button>
+          </div>
         </div>
       </header>
+
+      {showConfig && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+            <div className="bg-slate-900 p-4 flex justify-between items-center">
+              <h3 className="text-white font-black text-xs uppercase tracking-widest">Configuración de API</h3>
+              <button onClick={() => setShowConfig(false)} className="text-slate-400 hover:text-white"><ICONS.X /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Si tienes problemas con la clave de API del sistema, puedes ingresar una manualmente aquí. 
+                Se guardará solo en este navegador.
+              </p>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase">Google Gemini API Key</label>
+                <input 
+                  type="password" 
+                  placeholder="AIzaSy..." 
+                  value={manualApiKey} 
+                  onChange={e => setManualApiKey(e.target.value)}
+                  className="w-full p-3 border border-slate-300 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-cyan-500"
+                />
+              </div>
+              <button 
+                onClick={saveApiKey}
+                className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-black py-3 rounded-xl shadow-lg transition-all active:scale-95 text-xs uppercase tracking-widest"
+              >
+                Guardar Configuración
+              </button>
+              <button 
+                onClick={() => { localStorage.removeItem('GEMINI_API_KEY_MANUAL'); setManualApiKey(''); alert('Clave eliminada. Se usará la del sistema.'); }}
+                className="w-full text-slate-400 hover:text-red-500 font-bold py-2 text-[10px] uppercase tracking-widest transition-colors"
+              >
+                Restablecer a Clave del Sistema
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="max-w-4xl mx-auto p-4 flex-1 w-full space-y-4">
         <nav className="flex bg-white rounded-xl p-1 shadow-sm border border-slate-200">

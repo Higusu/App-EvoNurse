@@ -12,14 +12,16 @@ const formatWithAnd = (items: string[]) => {
 };
 
 export const generateEvolution = async (data: PatientData, ticks: TicksState): Promise<string> => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Intentar obtener la clave de múltiples fuentes inyectadas por Vite
+  const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.API_KEY || "";
+  
   if (!apiKey || apiKey === 'undefined' || apiKey === '') {
     console.error("API Key faltante o inválida en el cliente.");
   } else {
     console.log("API Key detectada, longitud:", apiKey.length);
   }
 
-  const ai = new GoogleGenAI({ apiKey: apiKey || '' });
+  const ai = new GoogleGenAI({ apiKey });
 
   // Título Formateado: EVOLUCION TURNO [SHIFT] DD/MM
   const [year, month, day] = data.date.split('-');

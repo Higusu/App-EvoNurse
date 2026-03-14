@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
     
     // Ensure we get the key from either process.env or the loaded env
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY || '';
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY || '';
 
     return {
       server: {
@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
       define: {
         'process.env.GEMINI_API_KEY': JSON.stringify(GEMINI_API_KEY),
         'process.env.API_KEY': JSON.stringify(GEMINI_API_KEY),
+        'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(GEMINI_API_KEY),
       },
       resolve: {
         alias: {

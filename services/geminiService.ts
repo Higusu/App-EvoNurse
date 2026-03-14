@@ -12,11 +12,13 @@ const formatWithAnd = (items: string[]) => {
 };
 
 export const generateEvolution = async (data: PatientData, ticks: TicksState): Promise<string> => {
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Try to get API key from multiple sources (Vite define or process.env)
+  const rawKey = process.env.GEMINI_API_KEY || (import.meta as any).env?.VITE_GEMINI_API_KEY;
+  const apiKey = typeof rawKey === 'string' ? rawKey.trim() : '';
   
   if (!apiKey || apiKey === 'undefined' || apiKey === 'null' || apiKey === '') {
     console.error("Gemini API Key is missing or invalid:", apiKey);
-    return "Error: No se detectó la configuración de la clave de API (GEMINI_API_KEY). Por favor, asegúrese de que la clave esté configurada en los ajustes de la aplicación y recargue la página.";
+    return "Error: No se detectó la configuración de la clave de API (GEMINI_API_KEY). Por favor, asegúrese de que la clave esté configurada en Settings y recargue la página.";
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -223,7 +225,7 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-flash-latest',
       contents: prompt,
       config: { 
         temperature: 0.1,
@@ -240,6 +242,11 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
   } catch (e) {
     console.error("Error in generateEvolution:", e);
     const errorMsg = e instanceof Error ? e.message : JSON.stringify(e);
+    
+    if (errorMsg.includes("PERMISSION_DENIED") || errorMsg.includes("API Key")) {
+      return `Error de Permisos: La clave de API parece no ser válida o no tiene permisos para este modelo. Verifique su clave en Settings. (Detalle: ${errorMsg})`;
+    }
+    
     return `Error generando evolución clínica: ${errorMsg}. (Verifique su clave de API en Settings)`;
   }
 };

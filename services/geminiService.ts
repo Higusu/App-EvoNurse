@@ -12,16 +12,7 @@ const formatWithAnd = (items: string[]) => {
 };
 
 export const generateEvolution = async (data: PatientData, ticks: TicksState): Promise<string> => {
-  // Intentar obtener la clave de múltiples fuentes inyectadas por Vite
-  const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.API_KEY || "";
-  
-  if (!apiKey || apiKey === 'undefined' || apiKey === '') {
-    console.error("API Key faltante o inválida en el cliente.");
-  } else {
-    console.log("API Key detectada, longitud:", apiKey.length);
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   // Título Formateado: EVOLUCION TURNO [SHIFT] DD/MM
   const [year, month, day] = data.date.split('-');
@@ -128,12 +119,11 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
   const invStr = ticks.invasivos.map(d => `${d.type === 'Otros' ? '' : `${d.type} `}${d.detail}`).join('. ');
 
   // 10. Tegumentos logic
-  const tegGeneralSelections = ticks.tegumentos.selections
-    .filter(s => s.category && s.category.match(/^[0-7]\./))
-    .sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+  const tegGeneralSelections = ticks.tegumentos.selections.filter(s => 
+    s.category && s.category.match(/^[0-6]\./)
+  );
 
   const formatTegSelection = (s: TegumentosSelection) => {
-    if (s.label === 'Otro' && s.value) return s.value;
     let text = s.label;
     if (s.side) text += ` ${s.side}`;
     if (s.value) text += ` ${s.value}`;
@@ -226,13 +216,12 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3-pro-preview',
       contents: prompt,
       config: { temperature: 0, topP: 0.1 }
     });
     return (response.text ?? "").replace(/\*/g, '').trim();
   } catch (e) {
-    console.error("Error en generateEvolution:", e);
-    return `Error generando evolución clínica: ${e instanceof Error ? e.message : 'Error desconocido'}`;
+    return "Error generando evolución clínica.";
   }
 };

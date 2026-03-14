@@ -14,9 +14,9 @@ const formatWithAnd = (items: string[]) => {
 export const generateEvolution = async (data: PatientData, ticks: TicksState): Promise<string> => {
   const apiKey = process.env.GEMINI_API_KEY;
   
-  if (!apiKey || apiKey === 'undefined' || apiKey === '') {
-    console.error("Gemini API Key is missing or undefined.");
-    return "Error: No se detectó la configuración de la clave de API. Por favor, contacte al administrador o intente recargar la página.";
+  if (!apiKey || apiKey === 'undefined' || apiKey === 'null' || apiKey === '') {
+    console.error("Gemini API Key is missing or invalid:", apiKey);
+    return "Error: No se detectó la configuración de la clave de API (GEMINI_API_KEY). Por favor, asegúrese de que la clave esté configurada en los ajustes de la aplicación y recargue la página.";
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -223,7 +223,7 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: { 
         temperature: 0.1,
@@ -239,6 +239,7 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
     return response.text.replace(/\*/g, '').trim();
   } catch (e) {
     console.error("Error in generateEvolution:", e);
-    return `Error generando evolución clínica: ${e instanceof Error ? e.message : 'Error desconocido'}.`;
+    const errorMsg = e instanceof Error ? e.message : JSON.stringify(e);
+    return `Error generando evolución clínica: ${errorMsg}. (Verifique su clave de API en Settings)`;
   }
 };

@@ -12,7 +12,14 @@ const formatWithAnd = (items: string[]) => {
 };
 
 export const generateEvolution = async (data: PatientData, ticks: TicksState): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === 'undefined' || apiKey === '') {
+    console.error("API Key faltante o inválida en el cliente.");
+  } else {
+    console.log("API Key detectada, longitud:", apiKey.length);
+  }
+
+  const ai = new GoogleGenAI({ apiKey: apiKey || '' });
 
   // Título Formateado: EVOLUCION TURNO [SHIFT] DD/MM
   const [year, month, day] = data.date.split('-');

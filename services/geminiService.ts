@@ -119,11 +119,12 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
   const invStr = ticks.invasivos.map(d => `${d.type === 'Otros' ? '' : `${d.type} `}${d.detail}`).join('. ');
 
   // 10. Tegumentos logic
-  const tegGeneralSelections = ticks.tegumentos.selections.filter(s => 
-    s.category && s.category.match(/^[0-6]\./)
-  );
+  const tegGeneralSelections = ticks.tegumentos.selections
+    .filter(s => s.category && s.category.match(/^[0-7]\./))
+    .sort((a, b) => (a.category || '').localeCompare(b.category || ''));
 
   const formatTegSelection = (s: TegumentosSelection) => {
+    if (s.label === 'Otro' && s.value) return s.value;
     let text = s.label;
     if (s.side) text += ` ${s.side}`;
     if (s.value) text += ` ${s.value}`;

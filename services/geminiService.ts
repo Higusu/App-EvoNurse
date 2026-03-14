@@ -12,7 +12,7 @@ const formatWithAnd = (items: string[]) => {
 };
 
 export const generateEvolution = async (data: PatientData, ticks: TicksState): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
   // Título Formateado: EVOLUCION TURNO [SHIFT] DD/MM
   const [year, month, day] = data.date.split('-');
@@ -216,12 +216,13 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: { temperature: 0, topP: 0.1 }
     });
     return (response.text ?? "").replace(/\*/g, '').trim();
   } catch (e) {
-    return "Error generando evolución clínica.";
+    console.error("Error in generateEvolution:", e);
+    return "Error generando evolución clínica. Por favor, intente nuevamente.";
   }
 };

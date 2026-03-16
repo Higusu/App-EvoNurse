@@ -12,27 +12,7 @@ const formatWithAnd = (items: string[]) => {
 };
 
 export const generateEvolution = async (data: PatientData, ticks: TicksState): Promise<string> => {
-  // 1. Try to get API key from localStorage (User entered in UI)
-  const localKey = typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY_MANUAL') : null;
-  
-  // 2. Try to get API key from all possible global sources
-  const envKey = (process.env as any).GEMINI_API_KEY || 
-                 (process.env as any).API_KEY || 
-                 (import.meta as any).env?.VITE_GEMINI_API_KEY ||
-                 (window as any).GEMINI_API_KEY;
-                 
-  const rawKey = localKey || envKey;
-  const apiKey = typeof rawKey === 'string' ? rawKey.trim() : '';
-  
-  if (apiKey) {
-    console.log(`API Key detectada (${localKey ? 'Manual' : 'Entorno'}): ${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}`);
-  }
-  
-  if (!apiKey || apiKey === 'undefined' || apiKey === 'null' || apiKey === '') {
-    return "Error: No se detectó la clave de API. \n\nPor favor, usa el botón de Configuración (engranaje) en la barra lateral para ingresar tu clave manualmente.";
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   // Título Formateado: EVOLUCION TURNO [SHIFT] DD/MM
   const [year, month, day] = data.date.split('-');
@@ -236,43 +216,12 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3-pro-preview',
       contents: prompt,
-      config: { 
-        temperature: 0.1,
-        topP: 0.95,
-      }
+      config: { temperature: 0, topP: 0.1 }
     });
-    
-    if (!response.text) {
-      console.warn("Gemini returned an empty response.");
-      return "La IA no pudo generar el texto. Por favor, revise los datos ingresados e intente nuevamente.";
-    }
-
-    return response.text.replace(/\*/g, '').trim();
-  } catch (e: any) {
-    console.error("Error in generateEvolution:", e);
-    
-    // Extract error details if available
-    let detail = "";
-    try {
-      detail = e.message || JSON.stringify(e);
-    } catch (err) {
-      detail = "Error desconocido";
-    }
-
-    if (detail.includes("PERMISSION_DENIED") || detail.includes("API Key")) {
-      return `Error de Permisos: La clave de API no es válida o no tiene acceso al modelo. 
-      
-      IMPORTANTE: 
-      1. Ve a 'Settings' -> 'Secrets'.
-      2. Asegúrate de que existe 'GEMINI_API_KEY'.
-      3. Si no existe, agrégala.
-      4. Si está 'bloqueada', es posible que necesites permisos de administrador en el proyecto.
-      
-      (Detalle técnico: ${detail})`;
-    }
-    
-    return `Error generando evolución clínica: ${detail}`;
+    return (response.text ?? "").replace(/\*/g, '').trim();
+  } catch (e) {
+    return "Error generando evolución clínica.";
   }
 };

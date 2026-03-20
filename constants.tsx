@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-export const NEURO_LIST_ORDER = ['GSW', 'RASS', 'SAS', 'Lucido', 'Orientado', 'Desorientado', 'Vigil', 'Somnoliento', 'Sopor', 'Tranquilo', 'Agitado', 'Con Sedoanalgesia', 'Con requerimientos de contención', 'CAM (+)', 'CAM (-)'];
+export const NEURO_LIST_ORDER = ['GSW', 'RASS', 'SAS', 'Lucido', 'Orientado', 'Desorientado', 'Vigil', 'Somnoliento', 'Sopor', 'Tranquilo', 'Agitado', 'Ansioso', 'Con Sedoanalgesia', 'Con requerimientos de contención', 'CAM (+)', 'CAM (-)'];
 
 export const RASS_OPTS = [
   { v: '+4', l: 'Combativo (+4)' }, { v: '+3', l: 'Muy Agitado (+3)' }, { v: '+2', l: 'Agitado (+2)' }, { v: '+1', l: 'Inquieto (+1)' },
@@ -32,6 +32,14 @@ export const BPS_OPTS = {
   facial: [{v: 1, l: 'Relajada (1)'}, {v: 2, l: 'Parcialmente tensa (2)'}, {v: 3, l: 'Totalmente tensa (3)'}, {v: 4, l: 'Muecas (4)'}],
   mmss: [{v: 1, l: 'No movimientos (1)'}, {v: 2, l: 'Parcialmente doblados (2)'}, {v: 3, l: 'Totalmente doblados con flexión de dedos (3)'}, {v: 4, l: 'Permanentemente retraídas (4)'}],
   vent: [{v: 1, l: 'Tolera el movimiento (1)'}, {v: 2, l: 'Tose, pero tolera la mayor parte del tiempo (2)'}, {v: 3, l: 'Lucha (3)'}, {v: 4, l: 'Imposible controlar la ventilación (4)'}]
+};
+
+export const PAINAD_OPTS = {
+  respiracion: [{v: 0, l: 'Normal (0)'}, {v: 1, l: 'Ruidosa, intermitente o laboriosa (1)'}, {v: 2, l: 'Hiperventilación, Cheyne-Stokes (2)'}],
+  vocalizacion: [{v: 0, l: 'Ninguna (0)'}, {v: 1, l: 'Quejidos, gemidos, llanto suave (1)'}, {v: 2, l: 'Gritos, sollozos fuertes, insultos (2)'}],
+  facial: [{v: 0, l: 'Sonriente o neutra (0)'}, {v: 1, l: 'Triste, miedo, muecas (1)'}, {v: 2, l: 'Muecas de dolor intensas (2)'}],
+  corporal: [{v: 0, l: 'Relajado (0)'}, {v: 1, l: 'Tenso, inquieto, agitado (1)'}, {v: 2, l: 'Rígido, puños cerrados, defensa (2)'}],
+  consuelo: [{v: 0, l: 'No necesita (0)'}, {v: 1, l: 'Se distrae o calma con voz/toque (1)'}, {v: 2, l: 'Muy difícil de consolar (2)'}]
 };
 
 export const NUTRI_VO_LIST = ['blando', 'liviano', 'picado fino', 'papilla', 'hiposódico', 'diabético', 'hipoglúcido', 'bajo en K y P', 'postres', 'régimen común', 'régimen líquido', 'otro'];
@@ -114,5 +122,6 @@ export const ICONS = {
   Refresh: () => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>,
   Trash: () => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>,
   Plus: () => <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
-  X: () => <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  X: () => <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  Settings: () => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
 };

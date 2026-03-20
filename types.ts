@@ -21,6 +21,14 @@ export interface BpsState {
   ventilacion: number;
 }
 
+export interface PainadState {
+  respiracion: number;
+  vocalizacion: number;
+  facial: number;
+  corporal: number;
+  consuelo: number;
+}
+
 export interface HemoDetail {
   frecuencia: 'Bradicardico' | 'Normocardico' | 'Taquicardico' | '';
   ritmo: 'RS' | 'FA' | 'Flutter' | '';
@@ -37,10 +45,11 @@ export interface HemoDetail {
   tempCnaf: string;
   paramsLibre: string;
   dolorStatus: 'No refiere' | 'Refiere' | 'Dolor no evaluable' | '';
-  dolorEscala: 'EVA' | 'CPOT' | 'BPS';
+  dolorEscala: 'EVA' | 'CPOT' | 'BPS' | 'PAINAD';
   evaVal: string;
   cpot: CpotState;
   bps: BpsState;
+  painad: PainadState;
   dolorAccion: string[]; 
   dolorVia: string[];   
 }

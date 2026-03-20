@@ -53,7 +53,11 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
   let dolorStr = h.dolorStatus === 'No refiere' ? "Paciente no refiere dolor ni molestias" : (h.dolorStatus === 'Dolor no evaluable' ? "Dolor no evaluable" : `Refiere dolor (${h.dolorEscala})`);
   if (h.dolorStatus === 'Refiere' || h.dolorStatus === 'Dolor no evaluable') {
     if (h.dolorStatus === 'Refiere') {
-      const val = h.dolorEscala === 'EVA' ? h.evaVal : (h.dolorEscala === 'CPOT' ? (h.cpot.facial + h.cpot.movimiento + h.cpot.tono + h.cpot.ventilacion + h.cpot.vocalizacion) : (h.bps.facial + h.bps.mmss + h.bps.ventilacion));
+      let val: number | string = 0;
+      if (h.dolorEscala === 'EVA') val = h.evaVal;
+      else if (h.dolorEscala === 'CPOT') val = h.cpot.facial + h.cpot.movimiento + h.cpot.tono + h.cpot.ventilacion + h.cpot.vocalizacion;
+      else if (h.dolorEscala === 'BPS') val = h.bps.facial + h.bps.mmss + h.bps.ventilacion;
+      else if (h.dolorEscala === 'PAINAD') val = h.painad.respiracion + h.painad.vocalizacion + h.painad.facial + h.painad.corporal + h.painad.consuelo;
       dolorStr += ` puntuación ${val}.`;
     }
     if (h.dolorAccion.length > 0 || h.dolorVia.length > 0) {
@@ -155,6 +159,9 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
       }).join(', ')
     : 'No evaluado';
 
+  const tegOtroSelection = ticks.tegumentos.selections.find(s => s.category === '7. Otro' && s.label === 'Otro');
+  const tegOtro = tegOtroSelection?.value ? `. Otros: ${tegOtroSelection.value}` : '';
+
   const prompt = `
     Actúa como un Sistema de Registro Clínico Determinista. Tu función es transformar datos estructurados en una nota de enfermería siguiendo un formato rígido e inamovible.
     REGLAS DE ORO:
@@ -203,7 +210,7 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
     • ${tegDevices}
 
     Signos de alarma 
-    • ${tegAlarma}
+    • ${tegAlarma}${tegOtro}
 
     11. Dispositivos Invasivos: 
     ${invStr || 'Sin dispositivos invasivos'}${invStr ? '.' : ''}
@@ -216,7 +223,7 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3.1-pro-preview',
       contents: prompt,
       config: { temperature: 0, topP: 0.1 }
     });

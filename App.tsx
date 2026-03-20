@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { PatientData, TicksState, TabType, DeviceEntry } from './types';
 import { 
-  GSW_OPTS, RASS_OPTS, SAS_OPTS, CPOT_OPTS, BPS_OPTS, 
+  GSW_OPTS, RASS_OPTS, SAS_OPTS, CPOT_OPTS, BPS_OPTS, PAINAD_OPTS,
   NUTRI_VO_LIST, NUTRI_ENTERAL_LIST, INVASIVOS_TIPOS, ICONS, NEURO_LIST_ORDER,
   TEGUMENTOS_CATEGORIES
 } from './constants';
@@ -12,6 +12,7 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('datos');
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState('');
+  const [copied, setCopied] = useState(false);
   
   const [patientData, setPatientData] = useState<PatientData>({
     shift: 'Largo', date: new Date().toISOString().split('T')[0], exams: '', pendings: ''
@@ -26,6 +27,7 @@ const App: React.FC = () => {
       dolorStatus: 'No refiere', dolorEscala: 'EVA', evaVal: '', 
       cpot: { facial: 0, movimiento: 0, tono: 0, ventilacion: 0, vocalizacion: 0 },
       bps: { facial: 1, mmss: 1, ventilacion: 1 },
+      painad: { respiracion: 0, vocalizacion: 0, facial: 0, corporal: 0, consuelo: 0 },
       dolorAccion: [], dolorVia: []
     },
     vent: [], tqt: { numero: '', cuff: '30' }, tot: { numero: '', cms: '', cuff: '30', sitio: '' },
@@ -289,40 +291,53 @@ const App: React.FC = () => {
                 <div className="flex gap-2">
                   {['No refiere', 'Refiere', 'Dolor no evaluable'].map(ds => <button key={ds} onClick={() => setTicks(p => ({...p, hemo: {...p.hemo, dolorStatus: ds as any}}))} className={`flex-1 py-1.5 text-[10px] font-black rounded border ${ticks.hemo.dolorStatus === ds ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-600 border-rose-200'}`}>{ds.toUpperCase()}</button>)}
                 </div>
-                {ticks.hemo.dolorStatus && ticks.hemo.dolorStatus !== 'No refiere' && (
-                  <div className="space-y-3 animate-fade-in">
-                    {ticks.hemo.dolorStatus === 'Refiere' && (
-                      <div className="flex gap-1">
-                        {['EVA', 'CPOT', 'BPS'].map(esc => <button key={esc} onClick={() => setTicks(p => ({...p, hemo: {...p.hemo, dolorEscala: esc as any}}))} className={`flex-1 py-1 text-[9px] font-bold rounded border ${ticks.hemo.dolorEscala === esc ? 'bg-rose-700 text-white border-rose-800' : 'bg-white text-rose-700 border-rose-200'}`}>{esc}</button>)}
-                      </div>
-                    )}
-                    {ticks.hemo.dolorStatus === 'Refiere' && ticks.hemo.dolorEscala === 'EVA' && <input placeholder="EVA 0-10" value={ticks.hemo.evaVal} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, evaVal: e.target.value}}))} className="w-full p-2 text-xs border border-slate-300 rounded bg-white font-medium" />}
-                    {ticks.hemo.dolorStatus === 'Refiere' && ticks.hemo.dolorEscala === 'CPOT' && (
-                      <div className="grid gap-1">
-                        {Object.entries(CPOT_OPTS).map(([k, opts]) => (
-                          <select key={k} value={(ticks.hemo.cpot as any)[k]} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, cpot: {...p.hemo.cpot, [k]: parseInt(e.target.value)}}}) )} className="text-[10px] p-1 border border-slate-300 rounded bg-white shadow-sm font-medium">
-                             {opts.map(o => <option key={o.v} value={o.v}>{k.toUpperCase()}: {o.l}</option>)}
-                          </select>
-                        ))}
-                      </div>
-                    )}
-                    {ticks.hemo.dolorStatus === 'Refiere' && ticks.hemo.dolorEscala === 'BPS' && (
-                      <div className="grid gap-1">
-                        {Object.entries(BPS_OPTS).map(([k, opts]) => (
-                          <select key={k} value={(ticks.hemo.bps as any)[k]} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, bps: {...p.hemo.bps, [k]: parseInt(e.target.value)}}}) )} className="text-[10px] p-1 border border-slate-300 rounded bg-white shadow-sm font-medium">
-                             {opts.map(o => <option key={o.v} value={o.v}>{k.toUpperCase()}: {o.l}</option>)}
-                        </select>
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex flex-wrap gap-1">
-                      {['Mantiene', 'Se agrega', 'Se administra'].map(acc => <button key={acc} onClick={() => toggleList('dolorAccion', acc, 'hemo')} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.hemo.dolorAccion.includes(acc) ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-600 border-rose-200'}`}>{acc}</button>)}
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {['Analgesia SOS', 'Analgesia por horario', 'Analgesia en BIC'].map(via => <button key={via} onClick={() => toggleList('dolorVia', via, 'hemo')} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.hemo.dolorVia.includes(via) ? 'bg-slate-700 text-white border-black' : 'bg-white text-slate-700 border-slate-200'}`}>{via}</button>)}
-                    </div>
+                
+                {ticks.hemo.dolorStatus === 'Refiere' && (
+                  <div className="flex gap-1 animate-fade-in">
+                    {['EVA', 'CPOT', 'BPS', 'PAINAD'].map(esc => <button key={esc} onClick={() => setTicks(p => ({...p, hemo: {...p.hemo, dolorEscala: esc as any}}))} className={`flex-1 py-1 text-[9px] font-bold rounded border ${ticks.hemo.dolorEscala === esc ? 'bg-rose-700 text-white border-rose-800' : 'bg-white text-rose-700 border-rose-200'}`}>{esc}</button>)}
                   </div>
                 )}
+
+                {ticks.hemo.dolorStatus === 'Refiere' && ticks.hemo.dolorEscala === 'EVA' && <input placeholder="EVA 0-10" value={ticks.hemo.evaVal} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, evaVal: e.target.value}}))} className="w-full p-2 text-xs border border-slate-300 rounded bg-white font-medium animate-fade-in" />}
+                
+                {ticks.hemo.dolorStatus === 'Refiere' && ticks.hemo.dolorEscala === 'CPOT' && (
+                  <div className="grid gap-1 animate-fade-in">
+                    {Object.entries(CPOT_OPTS).map(([k, opts]) => (
+                      <select key={k} value={(ticks.hemo.cpot as any)[k]} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, cpot: {...p.hemo.cpot, [k]: parseInt(e.target.value)}}}) )} className="text-[10px] p-1 border border-slate-300 rounded bg-white shadow-sm font-medium">
+                          {opts.map(o => <option key={o.v} value={o.v}>{k.toUpperCase()}: {o.l}</option>)}
+                      </select>
+                    ))}
+                  </div>
+                )}
+                
+                {ticks.hemo.dolorStatus === 'Refiere' && ticks.hemo.dolorEscala === 'BPS' && (
+                  <div className="grid gap-1 animate-fade-in">
+                    {Object.entries(BPS_OPTS).map(([k, opts]) => (
+                      <select key={k} value={(ticks.hemo.bps as any)[k]} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, bps: {...p.hemo.bps, [k]: parseInt(e.target.value)}}}) )} className="text-[10px] p-1 border border-slate-300 rounded bg-white shadow-sm font-medium">
+                          {opts.map(o => <option key={o.v} value={o.v}>{k.toUpperCase()}: {o.l}</option>)}
+                    </select>
+                    ))}
+                  </div>
+                )}
+
+                {ticks.hemo.dolorStatus === 'Refiere' && ticks.hemo.dolorEscala === 'PAINAD' && (
+                  <div className="grid gap-1 animate-fade-in">
+                    {Object.entries(PAINAD_OPTS).map(([k, opts]) => (
+                      <select key={k} value={(ticks.hemo.painad as any)[k]} onChange={e => setTicks(p => ({...p, hemo: {...p.hemo, painad: {...p.hemo.painad, [k]: parseInt(e.target.value)}}}) )} className="text-[10px] p-1 border border-slate-300 rounded bg-white shadow-sm font-medium">
+                          {opts.map(o => <option key={o.v} value={o.v}>{k.toUpperCase()}: {o.l}</option>)}
+                    </select>
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-3 pt-2 border-t border-rose-100">
+                  <div className="flex flex-wrap gap-1">
+                    {['Mantiene', 'Se agrega', 'Se administra'].map(acc => <button key={acc} onClick={() => toggleList('dolorAccion', acc, 'hemo')} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.hemo.dolorAccion.includes(acc) ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-600 border-rose-200'}`}>{acc}</button>)}
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {['Analgesia SOS', 'Analgesia por horario', 'Analgesia en BIC', 'Analgesia por PCA'].map(via => <button key={via} onClick={() => toggleList('dolorVia', via, 'hemo')} className={`px-2 py-1 text-[9px] font-bold rounded border ${ticks.hemo.dolorVia.includes(via) ? 'bg-slate-700 text-white border-black' : 'bg-white text-slate-700 border-slate-200'}`}>{via}</button>)}
+                  </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -653,7 +668,18 @@ const App: React.FC = () => {
           <div className="bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden animate-fade-in">
             <div className="bg-slate-900 px-6 py-4 flex justify-between items-center">
               <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Evolución Clínica UCI</span>
-              {result && <button onClick={() => { navigator.clipboard.writeText(result); alert('Copiado al portapapeles exitosamente.'); }} className="bg-cyan-600 text-white px-5 py-2 rounded-lg text-xs font-black hover:bg-cyan-700 shadow-lg active:scale-95 transition-all">COPIAR RESULTADO</button>}
+              {result && (
+                <button 
+                  onClick={() => { 
+                    navigator.clipboard.writeText(result); 
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }} 
+                  className={`${copied ? 'bg-emerald-600' : 'bg-cyan-600 hover:bg-cyan-700'} text-white px-5 py-2 rounded-lg text-xs font-black shadow-lg active:scale-95 transition-all`}
+                >
+                  {copied ? 'COPIADO' : 'COPIAR RESULTADO'}
+                </button>
+              )}
             </div>
             <div className="p-8">
               {isGenerating ? (

@@ -135,7 +135,7 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
   };
 
   const tegGeneralList = tegGeneralSelections.map(formatTegSelection);
-  const tegGeneral = tegGeneralList.length > 0 
+  let tegGeneral = tegGeneralList.length > 0 
     ? tegGeneralList.map((item, index) => {
         const val = item.toLowerCase();
         if (index === 0) return val.charAt(0).toUpperCase() + val.slice(1);
@@ -160,7 +160,11 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
     : 'No evaluado';
 
   const tegOtroSelection = ticks.tegumentos.selections.find(s => s.category === '7. Otro' && s.label === 'Otro');
-  const tegOtro = tegOtroSelection?.value || 'No evaluado';
+  const tegOtroVal = tegOtroSelection?.value || '';
+  if (tegOtroVal) {
+    if (tegGeneral === 'No evaluado') tegGeneral = tegOtroVal;
+    else tegGeneral += `. ${tegOtroVal}`;
+  }
 
   const prompt = `
     Actúa como un Sistema de Registro Clínico Determinista. Tu función es transformar datos estructurados en una nota de enfermería siguiendo un formato rígido e inamovible.
@@ -211,9 +215,6 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
 
     Signos de alarma 
     • ${tegAlarma}
-
-    Otros hallazgos
-    • ${tegOtro}
 
     11. Dispositivos Invasivos: 
     ${invStr || 'Sin dispositivos invasivos'}${invStr ? '.' : ''}

@@ -160,7 +160,7 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
     : 'No evaluado';
 
   const tegOtroSelection = ticks.tegumentos.selections.find(s => s.category === '7. Otro' && s.label === 'Otro');
-  const tegOtro = tegOtroSelection?.value ? `. Otros: ${tegOtroSelection.value}` : '';
+  const tegOtro = tegOtroSelection?.value || 'No evaluado';
 
   const prompt = `
     Actúa como un Sistema de Registro Clínico Determinista. Tu función es transformar datos estructurados en una nota de enfermería siguiendo un formato rígido e inamovible.
@@ -182,7 +182,7 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
     4. Exámenes: Procesa el texto de laboratorio: "${data.exams}".
        REGLAS ESTRICTAS PARA PUNTO 4:
        - Solo incluye los exámenes de esta lista en el orden dado, ignora el resto:
-         Hematocrito (Hcto), Hemoglobina (Hb), Recuento de leucocitos (RL), Recuento de plaquetas (RP), Nitrogeno ureico (BUN), Creatintina (Crea), Na (Na), K (K), Cl (Cl), Magnesio (Mg), Calcio (Ca), Fosforo (P), Lactato (Lactato), Proteina C Reactiva (PCR), Calcio Ionico (CaI), Gases arteriales (GSA), Gases Venosos (GSV), LDH (LDH), Bilirrubina Total (BT), Bilirrubina Directa (BD), Fosfatasa Alcalina (FA), GOT (GOT), GPT (GOT), GGT (GGT), Craetinaquinasa Total (CKT), Craetinaquinasa MB (CKMB), Albumina (Alb), Tiempo de tromboplastina (TP), Tiempo de tromboplastina parcial activado (TTPK), Troponina (Tropo), INR (INR), Colesterol Total (CT), HDL (HDL), Trigliceridos (TG), LDL (LDL).
+         Hematocrito (Hcto), Hemoglobina (Hb), Recuento de leucocitos (RL), Recuento de plaquetas (RP), Nitrógeno ureico (BUN), Creatinina (Crea), Na (Na), K (K), Cl (Cl), Magnesio (Mg), Calcio (Ca), Fósforo (P), Lactato (Lactato), Proteína C Reactiva (PCR), Procalcitonina (PCT), Calcio Iónico (CaI), Glicemia (Glu), Gases arteriales (GSA), Gases Venosos (GSV), LDH (LDH), Bilirrubina Total (BT), Bilirrubina Directa (BD), Fosfatasa Alcalina (FA), GOT (GOT), GPT (GPT), GGT (GGT), Creatinaquinasa Total (CKT), Creatinaquinasa MB (CKMB), Albúmina (Alb), Tiempo de protrombina (TP), Tiempo de tromboplastina parcial activado (TTPK), Troponina (Tropo), INR (INR), Colesterol Total (CT), HDL (HDL), Triglicéridos (TG), LDL (LDL).
        - USA LAS ABREVIACIONES ENTRE PARÉNTESIS.
        - GASES: Formato pH/pCO2/pO2/HCO3/CO2T/B.E (ej: GSA 7.4/40/90/24/25/+1).
        - ELIMINA UNIDADES (mg/dL, mmol/L, etc.). Solo deja el número.
@@ -210,7 +210,10 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
     • ${tegDevices}
 
     Signos de alarma 
-    • ${tegAlarma}${tegOtro}
+    • ${tegAlarma}
+
+    Otros hallazgos
+    • ${tegOtro}
 
     11. Dispositivos Invasivos: 
     ${invStr || 'Sin dispositivos invasivos'}${invStr ? '.' : ''}

@@ -81,6 +81,9 @@ export interface DeviceEntry {
   id: string;
   type: string;
   detail: string;
+  flagI?: boolean;
+  flagL?: boolean;
+  flagP?: boolean;
 }
 
 // Estructura para capturar datos específicos de nutrición por vía

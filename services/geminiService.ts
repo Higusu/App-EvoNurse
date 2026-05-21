@@ -120,7 +120,17 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
   if (ticks.eliminacion.includes('Dialisis')) elimParts.push(`Dialisis con UF de ${ticks.elimDetail.dialisisUF}ml`);
 
   // 11. Invasivos
-  const invStr = ticks.invasivos.map(d => `${d.type === 'Otros' ? '' : `${d.type} `}${d.detail}`).join('. ');
+  const invStr = ticks.invasivos.map(d => {
+    const base = `${d.type === 'Otros' ? '' : `${d.type} `}${d.detail}`.trim();
+    const opts: string[] = [];
+    if (d.flagI) opts.push("sin signos de infección");
+    if (d.flagL) opts.push("sin signos de LPP");
+    if (d.flagP) opts.push("permeable");
+    if (opts.length > 0) {
+      return base ? `${base} ${opts.join(', ')}` : opts.join(', ');
+    }
+    return base;
+  }).filter(Boolean).join('. ');
 
   // 10. Tegumentos logic
   const tegGeneralSelections = ticks.tegumentos.selections.filter(s => 

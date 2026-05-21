@@ -651,12 +651,46 @@ const App: React.FC = () => {
               <div className="flex flex-wrap gap-1 mb-3">
                 {INVASIVOS_TIPOS.map(t => <button key={t} onClick={() => addInv(t)} className="px-2 py-1 bg-cyan-50 text-cyan-700 rounded text-[10px] font-bold border border-cyan-100 flex items-center gap-1 hover:bg-cyan-100 shadow-sm transition-colors"><ICONS.Plus /> {t}</button>)}
               </div>
+              
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[9px] font-bold text-slate-500 mb-3 bg-slate-50 p-2 rounded-lg border border-slate-150">
+                <span className="flex items-center gap-1"><span className="w-3.5 h-3.5 flex items-center justify-center bg-green-600 text-white rounded text-[8px] font-black">I</span> Sin signos de infección</span>
+                <span className="flex items-center gap-1"><span className="w-3.5 h-3.5 flex items-center justify-center bg-green-600 text-white rounded text-[8px] font-black">L</span> Sin signos de LPP</span>
+                <span className="flex items-center gap-1"><span className="w-3.5 h-3.5 flex items-center justify-center bg-green-600 text-white rounded text-[8px] font-black">P</span> Permeable</span>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {ticks.invasivos.map(d => (
-                  <div key={d.id} className="bg-white p-2 rounded-lg border border-cyan-200 relative animate-fade-in shadow-sm">
+                  <div key={d.id} className="bg-white p-2.5 rounded-lg border border-cyan-200 relative animate-fade-in shadow-sm flex flex-col justify-between">
                     <button onClick={() => setTicks(p => ({...p, invasivos: p.invasivos.filter(x => x.id !== d.id)}))} className="absolute -top-1.5 -right-1.5 bg-red-100 text-red-600 p-1 rounded-full border border-red-200 shadow-sm hover:bg-red-200"><ICONS.X /></button>
-                    <span className="text-[9px] font-black text-cyan-600 uppercase">{d.type === 'Otros' ? 'Libre' : d.type}</span>
-                    <input placeholder="Lugar, #, características..." value={d.detail} onChange={e => setTicks(p => ({...p, invasivos: p.invasivos.map(x => x.id === d.id ? {...x, detail: e.target.value} : x)}))} className="w-full text-xs p-1 mt-1 border border-slate-300 rounded bg-white outline-none focus:ring-1 focus:ring-cyan-300 font-medium" />
+                    <div>
+                      <span className="text-[9px] font-black text-cyan-600 uppercase">{d.type === 'Otros' ? 'Libre' : d.type}</span>
+                      <input placeholder="Lugar, #, características..." value={d.detail} onChange={e => setTicks(p => ({...p, invasivos: p.invasivos.map(x => x.id === d.id ? {...x, detail: e.target.value} : x)}))} className="w-full text-xs p-1 mt-1 border border-slate-300 rounded bg-white outline-none focus:ring-1 focus:ring-cyan-300 font-medium" />
+                    </div>
+                    
+                    <div className="flex items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-100">
+                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mr-1">Parámetros:</span>
+                      <button 
+                        onClick={() => setTicks(p => ({...p, invasivos: p.invasivos.map(x => x.id === d.id ? {...x, flagI: !x.flagI} : x)}))}
+                        className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded-md border transition-all ${d.flagI ? 'bg-green-600 border-green-700 text-white shadow-md' : 'bg-cyan-50 border-cyan-200 text-cyan-700 hover:bg-cyan-100'}`}
+                        title="Sin signos de infección (I)"
+                      >
+                        I
+                      </button>
+                      <button 
+                        onClick={() => setTicks(p => ({...p, invasivos: p.invasivos.map(x => x.id === d.id ? {...x, flagL: !x.flagL} : x)}))}
+                        className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded-md border transition-all ${d.flagL ? 'bg-green-600 border-green-700 text-white shadow-md' : 'bg-cyan-50 border-cyan-200 text-cyan-700 hover:bg-cyan-100'}`}
+                        title="Sin signos de LPP (L)"
+                      >
+                        L
+                      </button>
+                      <button 
+                        onClick={() => setTicks(p => ({...p, invasivos: p.invasivos.map(x => x.id === d.id ? {...x, flagP: !x.flagP} : x)}))}
+                        className={`w-6 h-6 flex items-center justify-center text-[10px] font-bold rounded-md border transition-all ${d.flagP ? 'bg-green-600 border-green-700 text-white shadow-md' : 'bg-cyan-50 border-cyan-200 text-cyan-700 hover:bg-cyan-100'}`}
+                        title="Permeable (P)"
+                      >
+                        P
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

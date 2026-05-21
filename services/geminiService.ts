@@ -200,7 +200,7 @@ export const generateEvolution = async (data: PatientData, ticks: TicksState): P
        - USA LAS ABREVIACIONES ENTRE PARÉNTESIS.
        - GASES: Formato pH/pCO2/pO2/HCO3/CO2T/B.E (ej: GSA 7.4/40/90/24/25/+1).
        - ELIMINA UNIDADES (mg/dL, mmol/L, etc.). Solo deja el número.
-       - Presentar como lista limpia separada por comas. Si no hay datos, poner "No evaluado".
+       - Presentar como lista limpia separada por comas. Si no hay datos, NO pongas "No evaluado", y sólo pon los exámenes que hayan sido incluidos (si no hay ninguno, deja el punto vacío después del título "4. Exámenes:").
 
     5. Ventilatorio: ${ventHeader}. ${ticks.uma || ''}. ${ventDetails}
 
